@@ -11,7 +11,7 @@ using Task = System.Threading.Tasks.Task;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
-using TeamDevTool.Views;
+using TeamDevTool.UI;
 
 namespace TeamDevTool
 {

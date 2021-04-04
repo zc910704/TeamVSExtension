@@ -51,6 +51,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="EditorExtension\ClassificationFormatDefinition.cs" />
+    <Compile Include="EditorExtension\ClassifierProvider.cs" />
+    <Compile Include="EditorExtension\ConfigParameterClassifier.cs" />
+    <Compile Include="EditorExtension\ConfigParameterTagger.cs" />
+    <Compile Include="EditorExtension\TaggerProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FileInfoService\IFileInfoService.cs" />
     <Compile Include="Services\FileInfoService\FileInfoService.cs" />
@@ -60,7 +65,7 @@
     <Compile Include="Services\PluginInfoService\PluginInfoService.cs" />
     <Compile Include="DevToolPackage.cs" />
     <Compile Include="Utils\VsConstants.cs" />
-    <Compile Include="Views\PluginStatusBar.xaml.cs">
+    <Compile Include="UI\PluginStatusBar.xaml.cs">
       <DependentUpon>PluginStatusBar.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -75,6 +80,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
@@ -101,7 +107,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Views\PluginStatusBar.xaml">
+    <Page Include="UI\PluginStatusBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
