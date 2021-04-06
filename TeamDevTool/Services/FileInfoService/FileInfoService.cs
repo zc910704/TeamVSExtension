@@ -102,7 +102,7 @@ namespace TeamDevTool.Services.FileInfoService
             UpdateProjectGuidDict(projects);
             RegisterProjectEvent();
             RegisterProjectItemEvent();
-            GenerateProjcetItemDict();
+            GenerateFileDict();
             //切换到低优先线程处理文件
             await TaskScheduler.Default;
         }
@@ -224,52 +224,92 @@ namespace TeamDevTool.Services.FileInfoService
         /// <summary>
         /// 获取项目内Item字典
         /// </summary>
-        private void GenerateProjcetItemDict()
+        private void GenerateFileDict()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             foreach (var pair in _ProjectDict)
             {
                 HashSet<ProjectItem> projectItems = new HashSet<ProjectItem>();
-                UpdateProjectInfo(pair.Value.ProjectItems, null, ref projectItems);
+                foreach (ProjectItem item in pair.Value.ProjectItems)
+                {
+                    GenerateProjcetItemDict(item, ref projectItems);
+                    SetRelation(item, null);
+                }
+                //UpdateProjectInfo(pair.Value.ProjectItems, null, ref projectItems);
                 _ProjectItemDict.TryAdd(pair.Key, projectItems);
             }
         }
 
-        private void UpdateProjectInfo(ProjectItems projectItems, ProjectItem parent, ref HashSet<ProjectItem> resultHashSet)
+        private void SetRelation(ProjectItem current, ProjectItem parent)
+        {
+            if (current == null) return;
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _ProjectItemInfoDict[current].Parent = _ProjectItemInfoDict[parent];
+            foreach (ProjectItem item in current.ProjectItems)
+            {
+                _ProjectItemInfoDict[current].Children.Add(_ProjectItemInfoDict[item]);
+            }
+        }
+
+        private void GenerateProjcetItemDict(ProjectItem current, ref HashSet<ProjectItem> projectItems)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (projectItems == null) throw new ArgumentNullException(nameof(projectItems));
-            if (resultHashSet == null) throw new ArgumentNullException(nameof(resultHashSet));
-            foreach (ProjectItem item in projectItems)
+            if (current == null) return;
+            foreach (ProjectItem item in current.ProjectItems)
             {
-                resultHashSet.Add(item);
+                projectItems.Add(item);
                 ProjectItemInfo projectItemInfo = new ProjectItemInfo()
                 {
                     Name = item.Name,
+                    Self = item,
                     /* 一个项目item（比如他是个文件夹，当然也可以有多个文件名）
                      * 索引从1开始
                      * https://docs.microsoft.com/en-us/dotnet/api/envdte.projectitem.filenames?view=visualstudiosdk-2019#EnvDTE_ProjectItem_FileNames_System_Int16_              
                      */
                     Path = item.FileNames[1],
                     ItemType = VsConstants.ProjectItemTypeDict[item.Kind],
-                    Parent = parent,
-                    Children = CastAsIEnumerable(item.ProjectItems),
-                    Project = projectItems.ContainingProject
+                    Project = item.ContainingProject
                 };
                 _ProjectItemInfoDict.TryAdd(item, projectItemInfo);
-                if (item.ProjectItems.Count > 0)
-                    UpdateProjectInfo(item.ProjectItems, item, ref resultHashSet);
+                GenerateProjcetItemDict(item, ref projectItems);
             }
-            
         }
 
-        private IEnumerable<ProjectItem> CastAsIEnumerable(ProjectItems projectItems)
-        {
-            foreach (ProjectItem item in projectItems)
-            {
-                yield return item;
-            }
-        }
+        //private void UpdateProjectInfo(ProjectItems projectItems, ProjectItem parent, ref HashSet<ProjectItem> resultHashSet)
+        //{
+        //    ThreadHelper.ThrowIfNotOnUIThread();
+        //    if (projectItems == null) throw new ArgumentNullException(nameof(projectItems));
+        //    if (resultHashSet == null) throw new ArgumentNullException(nameof(resultHashSet));
+        //    foreach (ProjectItem item in projectItems)
+        //    {
+        //        resultHashSet.Add(item);
+        //        ProjectItemInfo projectItemInfo = new ProjectItemInfo()
+        //        {
+        //            Name = item.Name,
+        //            /* 一个项目item（比如他是个文件夹，当然也可以有多个文件名）
+        //             * 索引从1开始
+        //             * https://docs.microsoft.com/en-us/dotnet/api/envdte.projectitem.filenames?view=visualstudiosdk-2019#EnvDTE_ProjectItem_FileNames_System_Int16_              
+        //             */
+        //            Path = item.FileNames[1],
+        //            ItemType = VsConstants.ProjectItemTypeDict[item.Kind],
+        //            Parent = parent,
+        //            Children = CastAsIEnumerable(item.ProjectItems),
+        //            Project = projectItems.ContainingProject
+        //        };
+        //        _ProjectItemInfoDict.TryAdd(item, projectItemInfo);
+        //        if (item.ProjectItems.Count > 0)
+        //            UpdateProjectInfo(item.ProjectItems, item, ref resultHashSet);
+        //    }
+            
+        //}
+
+        //private IEnumerable<ProjectItem> CastAsIEnumerable(ProjectItems projectItems)
+        //{
+        //    foreach (ProjectItem item in projectItems)
+        //    {
+        //        yield return item;
+        //    }
+        //}
 
         #endregion
     }

@@ -31,12 +31,17 @@ namespace TeamDevTool.Services.FileInfoService
         /// <summary>
         /// 父文件夹，项目根目录父文件夹为null
         /// </summary>
-        public ProjectItem Parent { get; set; }
+        public ProjectItemInfo Parent { get; set; }
+
+        /// <summary>
+        /// 自身
+        /// </summary>
+        public ProjectItem Self { get; set; }
 
         /// <summary>
         /// 子文件或文件夹
         /// </summary>
-        public IEnumerable<ProjectItem> Children { get; set; }
+        public IList<ProjectItemInfo> Children { get; set; }
 
         /// <summary>
         /// 所属项目
