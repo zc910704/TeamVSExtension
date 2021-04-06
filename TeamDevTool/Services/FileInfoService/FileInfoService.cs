@@ -233,6 +233,10 @@ namespace TeamDevTool.Services.FileInfoService
                 foreach (ProjectItem item in pair.Value.ProjectItems)
                 {
                     GenerateProjcetItemDict(item, ref projectItems);
+                }
+
+                foreach (ProjectItem item in pair.Value.ProjectItems)
+                {
                     SetRelation(item, null);
                 }
                 //UpdateProjectInfo(pair.Value.ProjectItems, null, ref projectItems);
@@ -244,10 +248,11 @@ namespace TeamDevTool.Services.FileInfoService
         {
             if (current == null) return;
             ThreadHelper.ThrowIfNotOnUIThread();
-            _ProjectItemInfoDict[current].Parent = _ProjectItemInfoDict[parent];
+            _ProjectItemInfoDict[current].Parent = parent != null ? _ProjectItemInfoDict[parent] : null;
             foreach (ProjectItem item in current.ProjectItems)
             {
                 _ProjectItemInfoDict[current].Children.Add(_ProjectItemInfoDict[item]);
+                SetRelation(item, current);
             }
         }
 
@@ -255,22 +260,22 @@ namespace TeamDevTool.Services.FileInfoService
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (current == null) return;
+            projectItems.Add(current);
+            ProjectItemInfo projectItemInfo = new ProjectItemInfo()
+            {
+                Name = current.Name,
+                Self = current,
+                /* 一个项目item（比如他是个文件夹，当然也可以有多个文件名）
+                 * 索引从1开始
+                 * https://docs.microsoft.com/en-us/dotnet/api/envdte.projectitem.filenames?view=visualstudiosdk-2019#EnvDTE_ProjectItem_FileNames_System_Int16_              
+                 */
+                Path = current.FileNames[1],
+                ItemType = VsConstants.ProjectItemTypeDict[current.Kind],
+                Project = current.ContainingProject
+            };
+            _ProjectItemInfoDict.TryAdd(current, projectItemInfo);
             foreach (ProjectItem item in current.ProjectItems)
             {
-                projectItems.Add(item);
-                ProjectItemInfo projectItemInfo = new ProjectItemInfo()
-                {
-                    Name = item.Name,
-                    Self = item,
-                    /* 一个项目item（比如他是个文件夹，当然也可以有多个文件名）
-                     * 索引从1开始
-                     * https://docs.microsoft.com/en-us/dotnet/api/envdte.projectitem.filenames?view=visualstudiosdk-2019#EnvDTE_ProjectItem_FileNames_System_Int16_              
-                     */
-                    Path = item.FileNames[1],
-                    ItemType = VsConstants.ProjectItemTypeDict[item.Kind],
-                    Project = item.ContainingProject
-                };
-                _ProjectItemInfoDict.TryAdd(item, projectItemInfo);
                 GenerateProjcetItemDict(item, ref projectItems);
             }
         }
