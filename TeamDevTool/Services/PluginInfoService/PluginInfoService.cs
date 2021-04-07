@@ -90,36 +90,35 @@ namespace TeamDevTool.Services.PluginInfoService
         private ProjectPluginInfo GetPluginsByProject(Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            //foreach (ProjectItem projectItem in project.ProjectItems)
-            //{
-            //    ProjectItemInfo info = FileInfoService.GetProjectItemInfo(projectItem);
-            //    if (info.Parent == null && info.ItemType == Utils.ProjectItemType.PhysicalFolder && info.Name == "Issue")
-            //    {
-            //        ProjectPluginInfo projectPluginInfo = new ProjectPluginInfo();
-            //        foreach (ProjectItem item in info.Children)
-            //        {
-            //            var item_in_issue_folder = FileInfoService.GetProjectItemInfo(item);
-            //            if (item_in_issue_folder.Name == "Common")
-            //            {
-            //                projectPluginInfo.ProjecIssuetCommonInfo = item_in_issue_folder;
-            //            }
-            //            else
-            //            {
-            //                var config_file = item_in_issue_folder.Children.First(i => i.Name == "Config.xml");
-            //                var path = FileInfoService.GetProjectItemInfo(config_file).Path;
-            //                var document = XDocument.Load(path);
-            //                string id = QueryComponentID(document);
-            //                projectPluginInfo.PluginIssueInfo.Add(new PluginInfo()
-            //                {
-            //                    ComponentID = id,
-            //                    IssueProjectItemInfo = item_in_issue_folder,
-            //                    ProjectPluginInfo = projectPluginInfo
-            //                });
-            //            }
-            //        }
-            //        return projectPluginInfo;
-            //    }
-            //}
+            foreach (ProjectItem projectItem in project.ProjectItems)
+            {
+                ProjectItemInfo info = FileInfoService.GetProjectItemInfo(projectItem);
+                if (info.Parent == null && info.ItemType == Utils.ProjectItemType.PhysicalFolder && info.Name == "Issue")
+                {
+                    ProjectPluginInfo projectPluginInfo = new ProjectPluginInfo();
+                    foreach (ProjectItem item in info.Children)
+                    {
+                        var item_in_issue_folder = FileInfoService.GetProjectItemInfo(item);
+                        if (item_in_issue_folder.Name == "Common")
+                        {
+                            projectPluginInfo.ProjecIssuetCommonInfo = item_in_issue_folder;
+                        }
+                        else
+                        {
+                            var config_file = item_in_issue_folder.Children.First(i => i.Name == "Config.xml");
+                            var document = XDocument.Load(config_file.Path);
+                            string id = QueryComponentID(document);
+                            projectPluginInfo.PluginIssueInfo.Add(new PluginInfo()
+                            {
+                                ComponentID = id,
+                                IssueProjectItemInfo = item_in_issue_folder,
+                                ProjectPluginInfo = projectPluginInfo
+                            });
+                        }
+                    }
+                    return projectPluginInfo;
+                }
+            }
             return null;
         }
 
